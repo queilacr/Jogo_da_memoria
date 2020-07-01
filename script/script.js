@@ -3,44 +3,24 @@ const back = 'card-back'
 const Card = 'card'
 const Icon = 'icon'
 
-let kittens = [
-    'cat1',
-    'cat2',
-    'cat3',
-    'cat4',
-    'cat5',
-    'cat6',
-    'cat7',
-    'cat8',
-    'cat9',
-    'cat10'
-]
-
-let cards = null
 startGame()
 
 function startGame() {
-    cards = createCardsFromKittens(kittens)
-    shuffleCards(cards)
-    
-    
-    initializeCards(cards)
+    initializeCards(game.createCardsFromKittens())
 }
 
 function initializeCards(cards) {
     let gameBoard = document.getElementById('gameBoard')
-    cards.forEach(card =>{
+    gameBoard.innerHTML = ''
+    game.cards.forEach(card =>{
         let cardElement = document.createElement('div')
         cardElement.id = card.id
         cardElement.classList.add(Card)
         cardElement.dataset.icon = card.icon
         createCardContent(card, cardElement)
         cardElement.addEventListener('click', flipCard)
-
         gameBoard.appendChild(cardElement)
-    })
-    
-    
+    })   
 }
 function createCardContent(card, cardElement) {
     createCardFace(front, card, cardElement)
@@ -61,44 +41,33 @@ function createCardFace(face, card, element) {
     element.appendChild(cardElementFace)
 }
 
-
-function shuffleCards(cards) {
-    let currentIndex = cards.length
-    let randonIndex = 0
-    while (currentIndex != 0) {
-        randonIndex = Math.floor(Math.random() * currentIndex)
-        currentIndex--
-        [cards[randonIndex], cards[currentIndex]] = [cards[currentIndex], cards[randonIndex]]
+function flipCard() {
+    if (game.setCard(this.id)){
+        this.classList.add('flip')
+        if (game.secondCard) {
+            if(game.CheckMatch()){
+                game.clearCards()
+                if(game.checkGameOver()){
+                    let gameOverLayer = document.getElementById('gameOver')
+                    gameOverLayer.style.display = 'flex'
+                }
+            }else {
+                setTimeout(()=>{
+                    let firstCardView = document.getElementById(game.firstCard.id)
+                    let secondCardView = document.getElementById(game.secondCard.id)
+                    firstCardView.classList.remove('flip')
+                    secondCardView.classList.remove('flip')
+                    game.unflipCards()
+                },1000)   
+            } 
+        }
     }
 }
 
-
-createCardsFromKittens(kittens)
-function createCardsFromKittens(kitten) {
-    let cards = []
-    kittens.forEach((kitten) => {
-        cards.push(createPairFromKitten(kitten))
-    })
-    return cards.flatMap(pair => pair);
+function restart (){
+    game.clearCards()
+    startGame()
+    let gameOverLayer = document.getElementById('gameOver')
+    gameOverLayer.style.display = 'none'
 }
-
-function createPairFromKitten(kitten) {
-    return [{
-        id: createIdWithKitten(kitten),
-        icon: kitten,
-        flipped: false
-    },{
-        id: createIdWithKitten(kitten),
-        icon: kitten,
-        flipped: false}
-    ]   
-}
-function createIdWithKitten(kitten) {
-    return kitten + parseInt(Math.random() * 1000)
-}
-
-function flipCard() {
-    this.classList.add('flip')
-}
-
 
